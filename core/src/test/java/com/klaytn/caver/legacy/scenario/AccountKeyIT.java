@@ -40,66 +40,62 @@ import static org.junit.Assert.assertEquals;
 
 public class AccountKeyIT extends Scenario {
 
-    KlayCredentials credentials1, credentials2, credentials3;
+        KlayCredentials credentials1, credentials2, credentials3;
 
-    @Test
-    public void AccountKeyRolebased() throws Exception {
-        KlayCredentials credentials = KlayCredentials.create(Keys.createEcKeyPair());
-        ValueTransfer.create(caver, BRANDON, LOCAL_CHAIN_ID).sendFunds(
-                BRANDON.getAddress(),
-                credentials.getAddress(),
-                BigDecimal.valueOf(20),
-                Convert.Unit.KLAY, GAS_LIMIT
-        ).send();
-        setUpAccount();
+        @Test
+        public void AccountKeyRolebased() throws Exception {
+                KlayCredentials credentials = KlayCredentials.create(Keys.createEcKeyPair());
+                ValueTransfer.create(caver, BRANDON, LOCAL_CHAIN_ID).sendFunds(
+                                BRANDON.getAddress(),
+                                credentials.getAddress(),
+                                BigDecimal.valueOf(20),
+                                Convert.Unit.KLAY, GAS_LIMIT).send();
+                setUpAccount();
 
-        AccountUpdateTransaction accountUpdateTransaction = AccountUpdateTransaction.create(
-                credentials.getAddress(),
-                createRolebased(),
-                gasPrice,
-                GAS_LIMIT);
-        KlayTransactionReceipt.TransactionReceipt receipt = Account.create(caver, credentials, LOCAL_CHAIN_ID)
-                .sendUpdateTransaction(accountUpdateTransaction)
-                .send();
-        assertEquals("0x1", receipt.getStatus());
-    }
+                AccountUpdateTransaction accountUpdateTransaction = AccountUpdateTransaction.create(
+                                credentials.getAddress(),
+                                createRolebased(),
+                                gasProvider.getGasPrice(),
+                                GAS_LIMIT);
+                KlayTransactionReceipt.TransactionReceipt receipt = Account.create(caver, credentials, LOCAL_CHAIN_ID)
+                                .sendUpdateTransaction(accountUpdateTransaction)
+                                .send();
+                assertEquals("0x1", receipt.getStatus());
+        }
 
-    private AccountKey createRolebased() {
-        return AccountKeyRoleBased.create(Arrays.asList(
-                AccountKeyPublic.create(credentials1.getEcKeyPair().getPublicKey()),
-                AccountKeyPublic.create(credentials2.getEcKeyPair().getPublicKey()),
-                getRoleFeePayer()
-        ));
-    }
+        private AccountKey createRolebased() {
+                return AccountKeyRoleBased.create(Arrays.asList(
+                                AccountKeyPublic.create(credentials1.getEcKeyPair().getPublicKey()),
+                                AccountKeyPublic.create(credentials2.getEcKeyPair().getPublicKey()),
+                                getRoleFeePayer()));
+        }
 
-    private AccountKeyWeightedMultiSig getRoleFeePayer() {
-        return AccountKeyWeightedMultiSig.create(
-                BigInteger.valueOf(5),
-                Arrays.asList(
-                        AccountKeyWeightedMultiSig.WeightedPublicKey.create(
-                                BigInteger.valueOf(2),
-                                AccountKeyPublic.create(credentials1.getEcKeyPair().getPublicKey())
-                        ),
-                        AccountKeyWeightedMultiSig.WeightedPublicKey.create(
-                                BigInteger.valueOf(2),
-                                AccountKeyPublic.create(credentials2.getEcKeyPair().getPublicKey())
-                        ),
-                        AccountKeyWeightedMultiSig.WeightedPublicKey.create(
-                                BigInteger.valueOf(1),
-                                AccountKeyPublic.create(credentials3.getEcKeyPair().getPublicKey())
-                        )
-                )
-        );
-    }
+        private AccountKeyWeightedMultiSig getRoleFeePayer() {
+                return AccountKeyWeightedMultiSig.create(
+                                BigInteger.valueOf(5),
+                                Arrays.asList(
+                                                AccountKeyWeightedMultiSig.WeightedPublicKey.create(
+                                                                BigInteger.valueOf(2),
+                                                                AccountKeyPublic.create(credentials1.getEcKeyPair()
+                                                                                .getPublicKey())),
+                                                AccountKeyWeightedMultiSig.WeightedPublicKey.create(
+                                                                BigInteger.valueOf(2),
+                                                                AccountKeyPublic.create(credentials2.getEcKeyPair()
+                                                                                .getPublicKey())),
+                                                AccountKeyWeightedMultiSig.WeightedPublicKey.create(
+                                                                BigInteger.valueOf(1),
+                                                                AccountKeyPublic.create(credentials3.getEcKeyPair()
+                                                                                .getPublicKey()))));
+        }
 
-    private void setUpAccount() throws Exception {
-        ECKeyPair key1 = Keys.createEcKeyPair();
-        credentials1 = KlayCredentials.create(key1);
+        private void setUpAccount() throws Exception {
+                ECKeyPair key1 = Keys.createEcKeyPair();
+                credentials1 = KlayCredentials.create(key1);
 
-        ECKeyPair key2 = Keys.createEcKeyPair();
-        credentials2 = KlayCredentials.create(key2);
+                ECKeyPair key2 = Keys.createEcKeyPair();
+                credentials2 = KlayCredentials.create(key2);
 
-        ECKeyPair key3 = Keys.createEcKeyPair();
-        credentials3 = KlayCredentials.create(key3);
-    }
+                ECKeyPair key3 = Keys.createEcKeyPair();
+                credentials3 = KlayCredentials.create(key3);
+        }
 }

@@ -47,7 +47,8 @@ import static org.junit.Assert.assertEquals;
 
 public class ManagedTransactionTest {
     private static final BigInteger GAS_LIMIT = BigInteger.valueOf(7_300_000);
-    private static final byte[] PAYLOAD = Numeric.hexStringToByteArray("0x60806040526000805534801561001457600080fd5b50610116806100246000396000f3006080604052600436106053576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff16806306661abd14605857806342cbb15c146080578063d14e62b81460a8575b600080fd5b348015606357600080fd5b50606a60d2565b6040518082815260200191505060405180910390f35b348015608b57600080fd5b50609260d8565b6040518082815260200191505060405180910390f35b34801560b357600080fd5b5060d06004803603810190808035906020019092919050505060e0565b005b60005481565b600043905090565b80600081905550505600a165627a7a7230582064856de85a2706463526593b08dd790054536042ef66d3204018e6790a2208d10029");
+    private static final byte[] PAYLOAD = Numeric.hexStringToByteArray(
+            "0x60806040526000805534801561001457600080fd5b50610116806100246000396000f3006080604052600436106053576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff16806306661abd14605857806342cbb15c146080578063d14e62b81460a8575b600080fd5b348015606357600080fd5b50606a60d2565b6040518082815260200191505060405180910390f35b348015608b57600080fd5b50609260d8565b6040518082815260200191505060405180910390f35b34801560b357600080fd5b5060d06004803603810190808035906020019092919050505060e0565b005b60005481565b600043905090565b80600081905550505600a165627a7a7230582064856de85a2706463526593b08dd790054536042ef66d3204018e6790a2208d10029");
 
     private Caver caver;
     private DefaultGasProvider gasProvider;
@@ -60,6 +61,9 @@ public class ManagedTransactionTest {
         caver = Caver.build(Caver.DEFAULT_URL);
         transactionManager = getTransactionManager(LUMAN);
         gasProvider = new DefaultGasProvider(caver);
+        this.smartContractDeployTransaction = SmartContractDeployTransaction
+                .create(LUMAN.getAddress(), BigInteger.ZERO, PAYLOAD, gasProvider.getGasPrice(), GAS_LIMIT,
+                        CodeFormat.EVM);
     }
 
     private TransactionManager getTransactionManager(KlayCredentials credentials) {
@@ -71,7 +75,8 @@ public class ManagedTransactionTest {
 
     private SmartContractExecutionTransaction getContractExecutionTransaction(String deployedContract) {
         return SmartContractExecutionTransaction
-                .create(LUMAN.getAddress(), deployedContract, BigInteger.ZERO, getChangePayload(), gasProvider.getGasPrice(), GAS_LIMIT);
+                .create(LUMAN.getAddress(), deployedContract, BigInteger.ZERO, getChangePayload(),
+                        gasProvider.getGasPrice(), GAS_LIMIT);
     }
 
     private AccountUpdateTransaction getAccountUpdateTransaction(KlayCredentials from, KlayCredentials to) {
@@ -79,8 +84,7 @@ public class ManagedTransactionTest {
                 from.getAddress(),
                 AccountKeyPublic.create(to.getEcKeyPair().getPublicKey()),
                 gasProvider.getGasPrice(),
-                GAS_LIMIT
-        );
+                GAS_LIMIT);
     }
 
     private String getDeployedContract(SmartContract smartContract) throws Exception {
@@ -100,14 +104,16 @@ public class ManagedTransactionTest {
     @Test
     public void testValueTransfer() throws Exception {
         ValueTransfer valueTransfer = ValueTransfer.create(caver, transactionManager);
-        KlayTransactionReceipt.TransactionReceipt transactionReceipt = valueTransfer.sendFunds(LUMAN.getAddress(), WAYNE.getAddress(), BigDecimal.ONE, Convert.Unit.PEB, GAS_LIMIT).send();
+        KlayTransactionReceipt.TransactionReceipt transactionReceipt = valueTransfer
+                .sendFunds(LUMAN.getAddress(), WAYNE.getAddress(), BigDecimal.ONE, Convert.Unit.PEB, GAS_LIMIT).send();
         assertEquals("0x1", transactionReceipt.getStatus());
     }
 
     @Test
     public void testValueTransferFlow() {
         ValueTransfer valueTransfer = ValueTransfer.create(caver, transactionManager);
-        valueTransfer.sendFunds(LUMAN.getAddress(), WAYNE.getAddress(), BigDecimal.ONE, Convert.Unit.PEB, GAS_LIMIT).flowable()
+        valueTransfer.sendFunds(LUMAN.getAddress(), WAYNE.getAddress(), BigDecimal.ONE, Convert.Unit.PEB, GAS_LIMIT)
+                .flowable()
                 .test()
                 .assertSubscribed()
                 .assertValue(receipt -> receipt.getStatus().equals("0x1"));
@@ -116,7 +122,9 @@ public class ManagedTransactionTest {
     @Test
     public void testValueTransferFuture() throws ExecutionException, InterruptedException {
         ValueTransfer valueTransfer = ValueTransfer.create(caver, transactionManager);
-        KlayTransactionReceipt.TransactionReceipt receipt = valueTransfer.sendFunds(LUMAN.getAddress(), WAYNE.getAddress(), BigDecimal.ONE, Convert.Unit.PEB, GAS_LIMIT).sendAsync().get();
+        KlayTransactionReceipt.TransactionReceipt receipt = valueTransfer
+                .sendFunds(LUMAN.getAddress(), WAYNE.getAddress(), BigDecimal.ONE, Convert.Unit.PEB, GAS_LIMIT)
+                .sendAsync().get();
         assertEquals("0x1", receipt.getStatus());
     }
 
@@ -128,12 +136,12 @@ public class ManagedTransactionTest {
                 BRANDON.getAddress(),
                 credentials.getAddress(),
                 BigDecimal.valueOf(20),
-                Convert.Unit.KLAY, GAS_LIMIT
-        ).send();
+                Convert.Unit.KLAY, GAS_LIMIT).send();
 
         KlayCredentials updateCredential = KlayCredentials.create(Keys.createEcKeyPair());
         Account updateAccount = Account.create(caver, getTransactionManager(credentials));
-        KlayTransactionReceipt.TransactionReceipt transactionReceipt = updateAccount.sendUpdateTransaction(getAccountUpdateTransaction(credentials, updateCredential)).send();
+        KlayTransactionReceipt.TransactionReceipt transactionReceipt = updateAccount
+                .sendUpdateTransaction(getAccountUpdateTransaction(credentials, updateCredential)).send();
         assertEquals("0x1", transactionReceipt.getStatus());
     }
 
@@ -145,8 +153,7 @@ public class ManagedTransactionTest {
                 BRANDON.getAddress(),
                 credentials.getAddress(),
                 BigDecimal.valueOf(20),
-                Convert.Unit.KLAY, GAS_LIMIT
-        ).send();
+                Convert.Unit.KLAY, GAS_LIMIT).send();
 
         KlayCredentials updateCredential = KlayCredentials.create(Keys.createEcKeyPair());
         Account updateAccount = Account.create(caver, getTransactionManager(credentials));
@@ -164,19 +171,20 @@ public class ManagedTransactionTest {
                 BRANDON.getAddress(),
                 credentials.getAddress(),
                 BigDecimal.valueOf(20),
-                Convert.Unit.KLAY, GAS_LIMIT
-        ).send();
+                Convert.Unit.KLAY, GAS_LIMIT).send();
 
         KlayCredentials updateCredential = KlayCredentials.create(Keys.createEcKeyPair());
         Account updateAccount = Account.create(caver, getTransactionManager(credentials));
-        KlayTransactionReceipt.TransactionReceipt transactionReceipt = updateAccount.sendUpdateTransaction(getAccountUpdateTransaction(credentials, updateCredential)).sendAsync().get();
+        KlayTransactionReceipt.TransactionReceipt transactionReceipt = updateAccount
+                .sendUpdateTransaction(getAccountUpdateTransaction(credentials, updateCredential)).sendAsync().get();
         assertEquals("0x1", transactionReceipt.getStatus());
     }
 
     @Test
     public void testSmartContractDeploy() throws Exception {
         SmartContract smartContractDeploy = SmartContract.create(caver, transactionManager);
-        KlayTransactionReceipt.TransactionReceipt receipt = smartContractDeploy.sendDeployTransaction(smartContractDeployTransaction).send();
+        KlayTransactionReceipt.TransactionReceipt receipt = smartContractDeploy
+                .sendDeployTransaction(smartContractDeployTransaction).send();
         assertEquals("0x1", receipt.getStatus());
     }
 
@@ -192,7 +200,8 @@ public class ManagedTransactionTest {
     @Test
     public void testSmartContractDeployFuture() throws ExecutionException, InterruptedException {
         SmartContract smartContractDeploy = SmartContract.create(caver, transactionManager);
-        KlayTransactionReceipt.TransactionReceipt receipt = smartContractDeploy.sendDeployTransaction(smartContractDeployTransaction).sendAsync().get();
+        KlayTransactionReceipt.TransactionReceipt receipt = smartContractDeploy
+                .sendDeployTransaction(smartContractDeployTransaction).sendAsync().get();
         assertEquals("0x1", receipt.getStatus());
     }
 
@@ -200,8 +209,8 @@ public class ManagedTransactionTest {
     public void testSmartContractExecution() throws Exception {
         SmartContract smartContractExecution = SmartContract.create(caver, transactionManager);
         String deployedContract = getDeployedContract(smartContractExecution);
-        KlayTransactionReceipt.TransactionReceipt receipt
-                = smartContractExecution.sendExecutionTransaction(getContractExecutionTransaction(deployedContract)).send();
+        KlayTransactionReceipt.TransactionReceipt receipt = smartContractExecution
+                .sendExecutionTransaction(getContractExecutionTransaction(deployedContract)).send();
         assertEquals("0x1", receipt.getStatus());
     }
 
@@ -220,7 +229,8 @@ public class ManagedTransactionTest {
     public void testSmartContractExecutionFuture() throws Exception {
         SmartContract smartContractExecution = SmartContract.create(caver, transactionManager);
         String deployedContract = getDeployedContract(smartContractExecution);
-        KlayTransactionReceipt.TransactionReceipt receipt = smartContractExecution.sendExecutionTransaction(getContractExecutionTransaction(deployedContract)).sendAsync().get();
+        KlayTransactionReceipt.TransactionReceipt receipt = smartContractExecution
+                .sendExecutionTransaction(getContractExecutionTransaction(deployedContract)).sendAsync().get();
         assertEquals("0x1", receipt.getStatus());
     }
 
@@ -231,7 +241,9 @@ public class ManagedTransactionTest {
                 .build();
 
         ValueTransfer valueTransfer = ValueTransfer.create(caver, transactionManager);
-        KlayTransactionReceipt.TransactionReceipt transactionReceipt = valueTransfer.sendFunds(LUMAN.getAddress(), BRANDON.getAddress(), BigDecimal.ONE, Convert.Unit.PEB, GAS_LIMIT).send();
+        KlayTransactionReceipt.TransactionReceipt transactionReceipt = valueTransfer
+                .sendFunds(LUMAN.getAddress(), BRANDON.getAddress(), BigDecimal.ONE, Convert.Unit.PEB, GAS_LIMIT)
+                .send();
         assertEquals("0x1", transactionReceipt.getStatus());
     }
 }

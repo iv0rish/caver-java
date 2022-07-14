@@ -44,7 +44,7 @@ import static junit.framework.TestCase.fail;
  */
 public class Scenario extends Accounts {
 
-    static final BigInteger GAS_LIMIT = BigInteger.valueOf(4_300_000);
+    static final BigInteger GAS_LIMIT = BigInteger.valueOf(7_300_000);
     static DefaultGasProvider gasProvider;
 
     private static final String WALLET_PASSWORD = "";
@@ -77,8 +77,8 @@ public class Scenario extends Accounts {
     }
 
     String signTransactionFromFeePayer(String senderRawTx, KlayCredentials feePayer) {
-        FeePayerManager feePayerManager = new FeePayerManager
-                .Builder(this.caver, feePayer).setChainId(LOCAL_CHAIN_ID).build();
+        FeePayerManager feePayerManager = new FeePayerManager.Builder(this.caver, feePayer).setChainId(LOCAL_CHAIN_ID)
+                .build();
         return feePayerManager.sign(senderRawTx).getValueAsString();
     }
 
@@ -89,8 +89,8 @@ public class Scenario extends Accounts {
 
     KlayTransactionReceipt.TransactionReceipt waitForTransactionReceipt(
             String transactionHash) throws Exception {
-        Optional<KlayTransactionReceipt.TransactionReceipt> transactionReceiptOptional =
-                getTransactionReceipt(transactionHash, SLEEP_DURATION, ATTEMPTS);
+        Optional<KlayTransactionReceipt.TransactionReceipt> transactionReceiptOptional = getTransactionReceipt(
+                transactionHash, SLEEP_DURATION, ATTEMPTS);
 
         if (!transactionReceiptOptional.isPresent()) {
             fail("Transaction receipt not generated after " + ATTEMPTS + " attempts");
@@ -100,8 +100,8 @@ public class Scenario extends Accounts {
 
     private Optional<KlayTransactionReceipt.TransactionReceipt> getTransactionReceipt(
             String transactionHash, int sleepDuration, int attempts) throws Exception {
-        Optional<KlayTransactionReceipt.TransactionReceipt> receiptOptional =
-                sendTransactionReceiptRequest(transactionHash);
+        Optional<KlayTransactionReceipt.TransactionReceipt> receiptOptional = sendTransactionReceiptRequest(
+                transactionHash);
         for (int i = 0; i < attempts; i++) {
             if (!receiptOptional.isPresent()) {
                 Thread.sleep(sleepDuration);
@@ -115,8 +115,8 @@ public class Scenario extends Accounts {
 
     private Optional<KlayTransactionReceipt.TransactionReceipt> sendTransactionReceiptRequest(
             String transactionHash) throws Exception {
-        Response<KlayTransactionReceipt.TransactionReceipt> transactionReceipt =
-                caver.klay().getTransactionReceipt(transactionHash).sendAsync().get();
+        Response<KlayTransactionReceipt.TransactionReceipt> transactionReceipt = caver.klay()
+                .getTransactionReceipt(transactionHash).sendAsync().get();
         return Optional.ofNullable(transactionReceipt.getResult());
     }
 }
